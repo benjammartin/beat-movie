@@ -2,6 +2,8 @@ package fr.sebcreme.gethealth;
 
 import android.app.Activity;
 import android.content.IntentSender;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ScaleDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener2;
@@ -12,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -42,7 +45,8 @@ public class MainActivity extends Activity implements SensorEventListener2, Goog
     Sensor heartSensor;
     GoogleApiClient mGoogleApiClient;
     private TextView mTextView;
-    private Button actionBtn;
+    private TextView heartbeatTextView;
+    private ImageButton actionBtn;
     private static final String COUNT_KEY = "fr.sebcreme.gethealth.bpm";
     private boolean sensorListen = false;
 
@@ -59,7 +63,8 @@ public class MainActivity extends Activity implements SensorEventListener2, Goog
             @Override
             public void onLayoutInflated(WatchViewStub stub) {
                 mTextView = (TextView) stub.findViewById(R.id.text);
-                actionBtn = (Button) stub.findViewById(R.id.action);
+                heartbeatTextView = (TextView) stub.findViewById(R.id.heartbeat);
+                actionBtn = (ImageButton) stub.findViewById(R.id.action);
 
                 actionBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -67,11 +72,11 @@ public class MainActivity extends Activity implements SensorEventListener2, Goog
                         Log.i("GetHealth", "Restart");
                         if (sensorListen){
                             unregisterListener();
-                            actionBtn.setText("Start");
+                            actionBtn.setImageResource(R.drawable.ic_play);
                             Log.i("GetHealth", "Stop sensor");
                         } else {
                             registerListener();
-                            actionBtn.setText("Stop");
+                            actionBtn.setImageResource(R.drawable.ic_pause);
                             Log.i("GetHealth", "Start sensor");
                         }
                     }
@@ -198,13 +203,14 @@ public class MainActivity extends Activity implements SensorEventListener2, Goog
             //Log.i("GetHealth", "ReservedEventCount : "+event.sensor.getFifoReservedEventCount());
             //Log.i("GetHealth", "Accuracy : "+getAccuracy(event.accuracy));
             if ((int)event.values[0]>0) {
-                //Log.i("GetHealth", "sensor changed " + event.values[0] + " acc : "+getAccuracy(event.accuracy));
-                mTextView.setText("♡" + (int) event.values[0] + " bpm \n "+getAccuracy(event.accuracy));
+                Log.i("GetHealth", "sensor changed " + event.values[0] + " acc : "+getAccuracy(event.accuracy));
+                mTextView.setText("" + getAccuracy(event.accuracy));
+                heartbeatTextView.setText("♡" + (int) event.values[0]);
                 putBpm((int) event.values[0], event.timestamp);
-
             }
             if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE || event.accuracy == SensorManager.SENSOR_STATUS_NO_CONTACT){
-                mTextView.setText("♡ LOST");
+                mTextView.setText("Lost Connection");
+                heartbeatTextView.setText("♡ 0");
             }
         }
 
