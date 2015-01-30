@@ -112,16 +112,18 @@ public class MainActivity extends Activity implements SensorEventListener2, Goog
 
     }
 
-    private void putBpm(int bpm) {
+    private void putBpm(int bpm, long timestamp) {
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/bpm");
         putDataMapReq.getDataMap().putInt("fr.sebcreme.gethealth.bpm", bpm);
+        putDataMapReq.getDataMap().putLong("fr.sebcreme.gethealth.bpm.ts", timestamp);
+
         PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
         PendingResult<DataApi.DataItemResult> pendingResult = Wearable.DataApi.putDataItem(mGoogleApiClient, putDataReq);
     }
     private void registerListener() {
         //Register the listener
         if (sensorManager != null){
-            sensorManager.registerListener(this, heartSensor,500000, 1000000);
+            sensorManager.registerListener(this, heartSensor, 500000, 1000000);
             sensorListen = true;
         }
     }
@@ -192,13 +194,13 @@ public class MainActivity extends Activity implements SensorEventListener2, Goog
 
         //Update your data. This check is very raw. You should improve it when the sensor is unable to calculate the heart rate
         if (event.sensor.getType() == Sensor.TYPE_HEART_RATE) {
-            Log.i("GetHealth", "MaxFifoEventCount : "+event.sensor.getFifoMaxEventCount());
-            Log.i("GetHealth", "ReservedEventCount : "+event.sensor.getFifoReservedEventCount());
-            Log.i("GetHealth", "Accuracy : "+getAccuracy(event.accuracy));
+            //Log.i("GetHealth", "MaxFifoEventCount : "+event.sensor.getFifoMaxEventCount());
+            //Log.i("GetHealth", "ReservedEventCount : "+event.sensor.getFifoReservedEventCount());
+            //Log.i("GetHealth", "Accuracy : "+getAccuracy(event.accuracy));
             if ((int)event.values[0]>0) {
-                Log.i("GetHealth", "sensor changed " + event.values[0] + " acc : "+getAccuracy(event.accuracy));
+                //Log.i("GetHealth", "sensor changed " + event.values[0] + " acc : "+getAccuracy(event.accuracy));
                 mTextView.setText("♡" + (int) event.values[0] + " bpm \n "+getAccuracy(event.accuracy));
-                putBpm((int) event.values[0]);
+                putBpm((int) event.values[0], event.timestamp);
 
             }
             if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE || event.accuracy == SensorManager.SENSOR_STATUS_NO_CONTACT){

@@ -46,7 +46,7 @@ public class MainActivity extends Activity implements DataApi.DataListener, Goog
     private GoogleApiClient mGoogleApiClient;
     private static final String COUNT_KEY = "fr.sebcreme.gethealth.bpm";
     private static final String YOUTUBE_DEVELOPER_KEY = "AIzaSyDZ3JqXfMlpyRoWF4-M6r6qrWHFJ26QzBo";
-
+    private static int lastBpm = 70;
 
 
     private TextView bpmTextView;
@@ -110,7 +110,16 @@ public class MainActivity extends Activity implements DataApi.DataListener, Goog
                 DataItem item = event.getDataItem();
                 if (item.getUri().getPath().compareTo("/bpm") == 0) {
                     DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
-                    Log.i("GetHealth", "UPDATE BPM ON PHONE : " + dataMap.getInt(COUNT_KEY));
+                    int receivedBpm = dataMap.getInt(COUNT_KEY);
+                    final int bpm = receivedBpm == lastBpm ? lastBpm + (int) (Math.random() * 3 + 1) : receivedBpm;
+                    lastBpm = receivedBpm;
+                    Log.i("GetHealth", "UPDATE BPM ON PHONE : " + bpm);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            bpmTextView.setText("♡" + bpm);
+                        }
+                    });
                 }
             } else if (event.getType() == DataEvent.TYPE_DELETED) {
                 // DataItem deleted
@@ -174,7 +183,7 @@ public class MainActivity extends Activity implements DataApi.DataListener, Goog
                                         boolean wasRestored) {
         if (!wasRestored) {
             player.setPlayerStyle(YouTubePlayer.PlayerStyle.CHROMELESS);
-            player.loadVideo("nCgQDjiotG0");
+            player.loadVideo("NmlMnbysxfw");
         }
     }
 
