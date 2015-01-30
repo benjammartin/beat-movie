@@ -39,27 +39,12 @@ import com.google.android.gms.wearable.Wearable;
 
 public class MainActivity extends Activity implements DataApi.DataListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener  {
 
-    private static final int REQUEST_OAUTH = 1;
     private GoogleApiClient mGoogleApiClient;
     private static final String COUNT_KEY = "fr.sebcreme.gethealth.bpm";
-
-    /**
-     *  Track whether an authorization activity is stacking over the current activity, i.e. when
-     *  a known auth error is being resolved, such as showing the account chooser or presenting a
-     *  consent dialog. This avoids common duplications as might happen on screen rotations, etc.
-     */
-    private static final String AUTH_PENDING = "auth_state_pending";
-    private boolean authInProgress = false;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (savedInstanceState != null) {
-            authInProgress = savedInstanceState.getBoolean(AUTH_PENDING);
-        }
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Wearable.API)
                 .addConnectionCallbacks(this)
@@ -79,6 +64,8 @@ public class MainActivity extends Activity implements DataApi.DataListener, Goog
     protected void onResume() {
         super.onResume();
         mGoogleApiClient.connect();
+        Wearable.DataApi.addListener(mGoogleApiClient, this);
+
     }
 
     @Override
@@ -90,6 +77,7 @@ public class MainActivity extends Activity implements DataApi.DataListener, Goog
     }
     @Override
     public void onConnected(Bundle bundle) {
+        Log.i("GetHealth", "Connected , listening to Wearable Changes");
         Wearable.DataApi.addListener(mGoogleApiClient, this);
     }
 
@@ -119,8 +107,6 @@ public class MainActivity extends Activity implements DataApi.DataListener, Goog
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         Log.i("GetHealth", "Activity Result :"+data.toString());
-        if (requestCode == REQUEST_OAUTH) {
-            authInProgress = false;
             if (resultCode == RESULT_OK) {
                 // Make sure the app is not already connected or attempting to connect
                 if (!mGoogleApiClient.isConnecting() && !mGoogleApiClient.isConnected()) {
@@ -128,7 +114,6 @@ public class MainActivity extends Activity implements DataApi.DataListener, Goog
                 }
 
             }
-        }
     }
 
     @Override
@@ -145,7 +130,6 @@ public class MainActivity extends Activity implements DataApi.DataListener, Goog
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean(AUTH_PENDING, authInProgress);
     }
 
     @Override

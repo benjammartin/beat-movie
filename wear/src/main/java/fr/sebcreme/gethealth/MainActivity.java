@@ -9,7 +9,9 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.wearable.view.WatchViewStub;
 import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -40,13 +42,15 @@ public class MainActivity extends Activity implements SensorEventListener2, Goog
     Sensor heartSensor;
     GoogleApiClient mGoogleApiClient;
     private TextView mTextView;
+    private Button actionBtn;
     private static final String COUNT_KEY = "fr.sebcreme.gethealth.bpm";
-    private int count = 0;
+    private boolean sensorListen = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         heartSensor = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
 
@@ -55,6 +59,23 @@ public class MainActivity extends Activity implements SensorEventListener2, Goog
             @Override
             public void onLayoutInflated(WatchViewStub stub) {
                 mTextView = (TextView) stub.findViewById(R.id.text);
+                actionBtn = (Button) stub.findViewById(R.id.action);
+
+                actionBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Log.i("GetHealth", "Restart");
+                        if (sensorListen){
+                            unregisterListener();
+                            actionBtn.setText("Start");
+                            Log.i("GetHealth", "Stop sensor");
+                        } else {
+                            registerListener();
+                            actionBtn.setText("Stop");
+                            Log.i("GetHealth", "Start sensor");
+                        }
+                    }
+                });
             }
         });
 
@@ -64,6 +85,7 @@ public class MainActivity extends Activity implements SensorEventListener2, Goog
                     public void onConnected(Bundle connectionHint) {
                         Log.i("GetHealth", "onConnected: " + connectionHint);
                         // Now you can use the Data Layer API
+
 
 
                     }
@@ -85,8 +107,6 @@ public class MainActivity extends Activity implements SensorEventListener2, Goog
                 .build();
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        WindowManager.LayoutParams lp = getWindow().getAttributes();
-        lp.screenBrightness = 0.2f;
 
 
 
@@ -94,21 +114,31 @@ public class MainActivity extends Activity implements SensorEventListener2, Goog
 
     private void putBpm(int bpm) {
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/bpm");
-        putDataMapReq.getDataMap().putInt(COUNT_KEY, bpm);
+        putDataMapReq.getDataMap().putInt("fr.sebcreme.gethealth.bpm", bpm);
         PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
         PendingResult<DataApi.DataItemResult> pendingResult = Wearable.DataApi.putDataItem(mGoogleApiClient, putDataReq);
     }
+    private void registerListener() {
+        //Register the listener
+        if (sensorManager != null){
+            sensorManager.registerListener(this, heartSensor,500000, 1000000);
+            sensorListen = true;
+        }
+    }
 
-
+    private void unregisterListener(){
+        if (sensorManager != null){
+            sensorManager.flush(this);
+            sensorManager.unregisterListener(this, heartSensor);
+            sensorListen = false;
+        }
+    }
     @Override
     protected void onStart() {
         super.onStart();
         Log.i("GetHealth", "start");
         mGoogleApiClient.connect();
-        //Register the listener
-        if (sensorManager != null){
-            sensorManager.registerListener(this, heartSensor, SensorManager.SENSOR_DELAY_NORMAL);
-        }
+        registerListener();
     }
 
     @Override
@@ -117,11 +147,18 @@ public class MainActivity extends Activity implements SensorEventListener2, Goog
         if (null != mGoogleApiClient && mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
+        unregisterListener();
         super.onStop();
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
             Log.i("GetHealth", "accuracy changed " + getAccuracy(accuracy));
 
         }
@@ -139,6 +176,7 @@ public class MainActivity extends Activity implements SensorEventListener2, Goog
     protected void onResume() {
         super.onResume();
         Log.i("GetHealth", "resume");
+        registerListener();
     }
     @Override
     protected void onPause() {
@@ -151,16 +189,23 @@ public class MainActivity extends Activity implements SensorEventListener2, Goog
     @Override
     public void onSensorChanged(SensorEvent event) {
 
+
         //Update your data. This check is very raw. You should improve it when the sensor is unable to calculate the heart rate
         if (event.sensor.getType() == Sensor.TYPE_HEART_RATE) {
+            Log.i("GetHealth", "MaxFifoEventCount : "+event.sensor.getFifoMaxEventCount());
+            Log.i("GetHealth", "ReservedEventCount : "+event.sensor.getFifoReservedEventCount());
+            Log.i("GetHealth", "Accuracy : "+getAccuracy(event.accuracy));
             if ((int)event.values[0]>0) {
                 Log.i("GetHealth", "sensor changed " + event.values[0] + " acc : "+getAccuracy(event.accuracy));
-                mTextView.setText("" + (int) event.values[0] + " bpm \n "+getAccuracy(event.accuracy));
+                mTextView.setText("♡" + (int) event.values[0] + " bpm \n "+getAccuracy(event.accuracy));
                 putBpm((int) event.values[0]);
 
             }
-
+            if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE || event.accuracy == SensorManager.SENSOR_STATUS_NO_CONTACT){
+                mTextView.setText("♡ LOST");
+            }
         }
+
     }
 
     @Override
