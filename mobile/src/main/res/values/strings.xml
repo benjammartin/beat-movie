@@ -3,5 +3,6 @@
 
     <string name="app_name">BeatMovie</string>
     <string name="action_settings">Settings</string>
+    <string name="default_bpm_text">♡88</string>
 
 </resources>

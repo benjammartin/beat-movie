@@ -9,6 +9,7 @@ import android.renderscript.Element;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -55,7 +56,7 @@ public class MainActivity extends Activity implements DataApi.DataListener, Goog
     private static final String AUTH_PENDING = "auth_state_pending";
     private boolean authInProgress = false;
 
-
+    private TextView bpmTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +75,8 @@ public class MainActivity extends Activity implements DataApi.DataListener, Goog
         YouTubePlayerFragment youTubePlayerFragment =
                 (YouTubePlayerFragment) getFragmentManager().findFragmentById(R.id.youtube_fragment);
         youTubePlayerFragment.initialize(YOUTUBE_DEVELOPER_KEY, this);
+
+        bpmTextView = (TextView) findViewById(R.id.bpm_text_view);
     }
     @Override
     protected void onStart() {
