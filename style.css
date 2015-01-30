@@ -132,6 +132,8 @@ h1 {
   margin-right: 50px;
 }
 
+.items li:last-child { margin-right: 0; }
+
 .items h3 {
   text-transform: uppercase;
   font-family: 'Montserrat', sans-serif;
