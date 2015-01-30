@@ -35,13 +35,17 @@ import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.Wearable;
+import com.google.android.youtube.player.YouTubeInitializationResult;
+import com.google.android.youtube.player.YouTubePlayer;
+import com.google.android.youtube.player.YouTubePlayerFragment;
 
 
-public class MainActivity extends Activity implements DataApi.DataListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener  {
+public class MainActivity extends Activity implements DataApi.DataListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, YouTubePlayer.OnInitializedListener {
 
     private static final int REQUEST_OAUTH = 1;
     private GoogleApiClient mGoogleApiClient;
     private static final String COUNT_KEY = "fr.sebcreme.gethealth.bpm";
+    private static final String YOUTUBE_DEVELOPER_KEY = "AIzaSyDZ3JqXfMlpyRoWF4-M6r6qrWHFJ26QzBo";
 
     /**
      *  Track whether an authorization activity is stacking over the current activity, i.e. when
@@ -66,6 +70,10 @@ public class MainActivity extends Activity implements DataApi.DataListener, Goog
                 .addOnConnectionFailedListener(this)
                 .build();
         setContentView(R.layout.activity_main);
+
+        YouTubePlayerFragment youTubePlayerFragment =
+                (YouTubePlayerFragment) getFragmentManager().findFragmentById(R.id.youtube_fragment);
+        youTubePlayerFragment.initialize(YOUTUBE_DEVELOPER_KEY, this);
     }
     @Override
     protected void onStart() {
@@ -170,7 +178,16 @@ public class MainActivity extends Activity implements DataApi.DataListener, Goog
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer player,
+                                        boolean wasRestored) {
+        if (!wasRestored) {
+            player.cueVideo("nCgQDjiotG0");
+        }
+    }
 
+    @Override
+    public void onInitializationFailure(YouTubePlayer.Provider provider, YouTubeInitializationResult youTubeInitializationResult) {
 
-
+    }
 }
