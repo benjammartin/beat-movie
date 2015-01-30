@@ -173,9 +173,8 @@ public class MainActivity extends Activity implements DataApi.DataListener, Goog
     public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer player,
                                         boolean wasRestored) {
         if (!wasRestored) {
-            // player.setPlayerStyle(YouTubePlayer.PlayerStyle.CHROMELESS);
-            player.cueVideo("nCgQDjiotG0");
-            player.play();
+            player.setPlayerStyle(YouTubePlayer.PlayerStyle.CHROMELESS);
+            player.loadVideo("nCgQDjiotG0");
         }
     }
 
