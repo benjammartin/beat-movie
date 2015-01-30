@@ -4,5 +4,7 @@
     <string name="app_name">GetHealth</string>
     <string name="hello_round">Hello Round 2 World!</string>
     <string name="hello_square">Hello Square World!</string>
+    <string name="restart">Restart</string>
+    <string name="start">Start</string>
 
 </resources>
